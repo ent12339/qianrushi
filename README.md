@@ -99,7 +99,7 @@ system:
 | 第一层 | red | `/dev/video20` | `/sys/class/pwm/pwmchip0` | 0 | other |
 | 第二层 | yellow | `/dev/video22` | `/sys/class/pwm/pwmchip2` | 0 | other |
 | 第三层 | blue | `/dev/video24` | `/sys/class/pwm/pwmchip1` | 0 | other |
-| 第四层 | green | `/dev/video20` | `/sys/class/pwm/pwmchip3` | 0 | other |
+| 第四层 | green | `/dev/video26` | `/sys/class/pwm/pwmchip3` | 0 | other |
 
 > 注意：同一个摄像头是否能同时给多层使用，需要根据实际硬件和运行情况确认。正式比赛展示前建议在 Web 控制台中重新扫描设备并保存每层绑定。
 
