@@ -1,4 +1,4 @@
-# K1 MUSE Pi Pro 多层视觉智能分拣系统
+# K1 MUSE Pi Pro 智能材料分拣系统
 
 ## 项目简介
 
