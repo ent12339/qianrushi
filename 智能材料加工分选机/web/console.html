@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>K1 分拣控制台</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: #0f172a;
+      --panel2: #111c33;
+      --panel3: #17233d;
+      --line: rgba(148, 163, 184, 0.22);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --yellow: #d97706;
+      --red: #dc2626;
+      --cyan: #06b6d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 36%),
+        radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.12), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 12px;
+      padding: 0 16px;
+      color: white;
+      background: #334155;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    button.primary { background: var(--blue); }
+    button.success { background: var(--green); }
+    button.warning { background: var(--yellow); }
+    button.danger { background: #b91c1c; }
+    button.gray { background: #475569; }
+
+    select,
+    input {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0 12px;
+      color: var(--text);
+      background: #07111f;
+      outline: none;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: rgba(37, 99, 235, 0.8);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.20);
+    }
+
+    .page {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 70px 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 18px;
+      background: rgba(15, 23, 42, 0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .brand small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .shell {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 44% 56%;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .left,
+    .right {
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(15, 23, 42, 0.92);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+      overflow: hidden;
+    }
+
+    .left {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .right {
+      display: grid;
+      grid-template-rows: 58px minmax(300px, 1fr) 112px 170px;
+    }
+
+    .panel-head {
+      height: 58px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(90deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .panel-head small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-card,
+    .stat-card {
+      background: rgba(2, 6, 23, 0.62);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .summary-card label,
+    .stat-card label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .summary-card strong,
+    .stat-card strong {
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tabs button {
+      flex: 1;
+      min-height: 48px;
+      background: #334155;
+    }
+
+    .tabs button.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.22);
+    }
+
+    .console-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 4px 0 10px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      background: #475569;
+      color: white;
+    }
+
+    .pill.RUNNING { background: #15803d; }
+    .pill.IDLE { background: #475569; }
+    .pill.PAUSED { background: #a16207; }
+    .pill.FAULT { background: #b91c1c; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .form-item label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .button-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .notice {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      color: #facc15;
+      border: 1px solid rgba(250, 204, 21, 0.28);
+      background: rgba(113, 63, 18, 0.24);
+      line-height: 1.55;
+    }
+
+    .video-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .video-wrap {
+      position: relative;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-wrap::before {
+      content: "LIVE";
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      z-index: 2;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(220, 38, 38, 0.95);
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: black;
+    }
+
+    .video-empty {
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat-card .green { color: #4ade80; }
+    .stat-card .red { color: #f87171; }
+    .stat-card .yellow { color: #facc15; }
+    .stat-card .blue { color: #60a5fa; }
+
+    .logs {
+      min-height: 0;
+      padding: 12px;
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.62);
+    }
+
+    .logs-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .logs-head small {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .log-list {
+      height: 118px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #cbd5e1;
+    }
+
+    .log-row {
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      z-index: 99999;
+      display: none;
+      max-width: 560px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.98);
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 42px rgba(0,0,0,0.45);
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .toast.error {
+      background: rgba(127, 29, 29, 0.98);
+    }
+
+    @media (max-width: 1300px) {
+      .shell {
+        grid-template-columns: 48% 52%;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <h1>K1 多层视觉分拣控制台</h1>
+      <small id="systemLine">系统连接中...</small>
+    </div>
+
+    <div class="top-actions">
+      <button class="success" onclick="startAll()">全部启动</button>
+      <button class="warning" onclick="pauseAll()">全部暂停</button>
+      <button class="danger" onclick="stopAll()">全部停止</button>
+      <button class="gray" onclick="resetAllCounts()">全部清零</button>
+      <button class="primary" onclick="rescanDevices()">扫描设备</button>
+      <button class="gray" onclick="location.href='/'">返回旧首页</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="left">
+      <div class="summary">
+        <div class="summary-card">
+          <label>目标分拣</label>
+          <strong id="sumTarget">0</strong>
+        </div>
+        <div class="summary-card">
+          <label>非目标/直通</label>
+          <strong id="sumOther">0</strong>
+        </div>
+        <div class="summary-card">
+          <label>运行层数</label>
+          <strong id="sumRunning">0</strong>
+        </div>
+        <div class="summary-card">
+          <label>CPU / 温度</label>
+          <strong id="sumCpu">--</strong>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button data-layer="layer_1" class="active" onclick="selectLayer('layer_1')">第一层</button>
+        <button data-layer="layer_2" onclick="selectLayer('layer_2')">第二层</button>
+        <button data-layer="layer_3" onclick="selectLayer('layer_3')">第三层</button>
+        <button data-layer="layer_4" onclick="selectLayer('layer_4')">第四层</button>
+      </div>
+
+      <div class="console-body">
+        <div class="section-title">
+          <h3 id="layerTitle">第一层参数调试</h3>
+          <span id="layerState" class="pill IDLE">IDLE</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-item">
+            <label>摄像头</label>
+            <select id="cameraSelect"></select>
+          </div>
+
+          <div class="form-item">
+            <label>PWM 通道</label>
+            <select id="pwmSelect"></select>
+          </div>
+
+          <div class="form-item">
+            <label>目标颜色</label>
+            <select id="targetColor">
+              <option value="red">RED</option>
+              <option value="yellow">YELLOW</option>
+              <option value="blue">BLUE</option>
+              <option value="green">GREEN</option>
+            </select>
+          </div>
+
+          <div class="form-item">
+            <label>非目标动作</label>
+            <select id="nonTargetAction">
+              <option value="pass">直通，不动作</option>
+              <option value="other">转向 OTHER 位置</option>
+            </select>
+          </div>
+
+          <div class="form-item">
+            <label>触发线 Y</label>
+            <input id="triggerLine" type="number" value="300">
+          </div>
+
+          <div class="form-item">
+            <label>控制置信度</label>
+            <input id="controlConf" type="number" step="0.01" value="0.45">
+          </div>
+
+          <div class="form-item">
+            <label>目标 duty(ns)</label>
+            <input id="targetDuty" type="number" value="1630000">
+          </div>
+
+          <div class="form-item">
+            <label>复位 duty(ns)</label>
+            <input id="resetDuty" type="number" value="1500000">
+          </div>
+
+          <div class="form-item">
+            <label>OTHER duty(ns)</label>
+            <input id="otherDuty" type="number" value="1370000">
+          </div>
+
+          <div class="form-item">
+            <label>保持时间(s)</label>
+            <input id="holdSeconds" type="number" step="0.1" value="2">
+          </div>
+        </div>
+
+        <div class="button-grid">
+          <button class="primary" onclick="saveLayerConfig()">保存参数</button>
+          <button class="success" onclick="layerAction('start')">启动</button>
+          <button class="warning" onclick="layerAction('pause')">暂停</button>
+          <button class="gray" onclick="layerAction('resume')">继续</button>
+          <button class="danger" onclick="layerAction('stop')">停止</button>
+          <button class="gray" onclick="layerAction('reset-count')">清零</button>
+        </div>
+
+        <div class="button-grid">
+          <button onclick="manualAction('target')">手动目标位</button>
+          <button onclick="manualAction('other')">手动 OTHER 位</button>
+          <button onclick="manualAction('reset')">舵机复位</button>
+          <button class="primary" onclick="reloadVideo()">刷新右侧画面</button>
+        </div>
+
+        <div class="notice">
+          外部水泵不接入软件控制。请先手动开启水泵并确认水流稳定，再启动分拣。  
+          当前页面不会在你编辑参数时重绘表单，因此下拉框不会自动弹掉。
+        </div>
+      </div>
+    </section>
+
+    <section class="right">
+      <div class="panel-head">
+        <div>
+          <h2>实时视觉监控</h2>
+          <small id="videoSubTitle">第一层 / 自动分拣画面</small>
+        </div>
+
+        <div class="video-head-actions">
+          <button class="primary" onclick="reloadVideo()">刷新画面</button>
+          <button class="gray" onclick="toggleFit()">切换填充</button>
+        </div>
+      </div>
+
+      <div class="video-wrap">
+        <img id="video" alt="实时画面">
+        <div id="videoEmpty" class="video-empty" style="display:none;">
+          当前层未绑定摄像头或未启动<br>
+          请在左侧选择摄像头并点击启动
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <label>目标颜色</label>
+          <strong id="statColor">--</strong>
+        </div>
+        <div class="stat-card">
+          <label>目标数量</label>
+          <strong id="statTarget">0</strong>
+        </div>
+        <div class="stat-card">
+          <label>其他数量</label>
+          <strong id="statOther">0</strong>
+        </div>
+        <div class="stat-card">
+          <label>FPS</label>
+          <strong id="statFps">0.0</strong>
+        </div>
+        <div class="stat-card">
+          <label>推理耗时</label>
+          <strong id="statInfer">0ms</strong>
+        </div>
+      </div>
+
+      <div class="logs">
+        <div class="logs-head">
+          <span>运行日志</span>
+          <small id="cameraInfo">摄像头：--</small>
+        </div>
+        <div id="logList" class="log-list">
+          <div class="log-row">等待日志...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const layerNames = {
+  layer_1: "第一层",
+  layer_2: "第二层",
+  layer_3: "第三层",
+  layer_4: "第四层"
+};
+
+const layerIds = ["layer_1", "layer_2", "layer_3", "layer_4"];
+
+let selectedLayer = "layer_1";
+let statusData = null;
+let devicesData = { cameras: [], pwm_channels: [] };
+let formDirty = false;
+let formLockUntil = 0;
+let videoFitCover = false;
+
+function toast(message, error = false) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.className = "toast show" + (error ? " error" : "");
+  setTimeout(() => {
+    el.className = "toast";
+  }, 2600);
+}
+
+async function api(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status} ${text}`);
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return await res.json();
+  }
+
+  return await res.text();
+}
+
+function currentLayer() {
+  if (!statusData || !Array.isArray(statusData.layers)) {
+    return null;
+  }
+
+  return statusData.layers.find(layer => layer.id === selectedLayer) || null;
+}
+
+function lockForm(ms = 30000) {
+  formLockUntil = Date.now() + ms;
+}
+
+function isEditing() {
+  const active = document.activeElement;
+  if (Date.now() < formLockUntil) return true;
+  if (active && active.closest && active.closest("select, input")) return true;
+  return false;
+}
+
+function bindFormEvents() {
+  document.querySelectorAll("select, input").forEach(el => {
+    el.addEventListener("pointerdown", () => lockForm(30000), true);
+    el.addEventListener("focus", () => lockForm(30000), true);
+    el.addEventListener("change", () => {
+      formDirty = true;
+      lockForm(5000);
+    }, true);
+    el.addEventListener("input", () => {
+      formDirty = true;
+      lockForm(5000);
+    }, true);
+    el.addEventListener("blur", () => lockForm(1200), true);
+  });
+}
+
+function setTabs() {
+  document.querySelectorAll(".tabs button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.layer === selectedLayer);
+  });
+}
+
+function option(label, value, selected = false, disabled = false) {
+  return `<option value="${String(value ?? "")}" ${selected ? "selected" : ""} ${disabled ? "disabled" : ""}>${label}</option>`;
+}
+
+function fillDeviceSelects(layer) {
+  const cameraSelect = document.getElementById("cameraSelect");
+  const pwmSelect = document.getElementById("pwmSelect");
+
+  const cameras = devicesData.cameras || [];
+  const pwms = devicesData.pwm_channels || [];
+
+  let cameraHtml = option("未绑定", "", !layer || !layer.camera_uid);
+
+  for (const cam of cameras) {
+    const uid = cam.uid || "";
+    const path = cam.path || "";
+    const name = cam.name || "Camera";
+    const readable = cam.capture_ok === false ? "不可读" : "可读";
+    const disabled = cam.capture_ok === false;
+    const selected = layer && uid && uid === layer.camera_uid;
+    cameraHtml += option(`${name} · ${path} · ${readable}`, uid, selected, disabled);
+  }
+
+  cameraSelect.innerHTML = cameraHtml;
+
+  let pwmHtml = option("未绑定", "", !layer || !layer.pwm_uid);
+
+  for (const pwm of pwms) {
+    const uid = pwm.uid || "";
+    const chip = pwm.chip || "";
+    const channel = pwm.channel ?? "";
+    const writable = pwm.writable === false ? "无写权限" : "可写";
+    const disabled = pwm.writable === false;
+    const selected = layer && uid && uid === layer.pwm_uid;
+    pwmHtml += option(`${chip.replace("/sys/class/pwm/", "")} / 通道 ${channel} · ${writable}`, uid, selected, disabled);
+  }
+
+  pwmSelect.innerHTML = pwmHtml;
+}
+
+function fillForm(layer) {
+  if (!layer) return;
+
+  document.getElementById("layerTitle").textContent = `${layerNames[selectedLayer]}参数调试`;
+
+  const state = document.getElementById("layerState");
+  state.textContent = layer.state || "IDLE";
+  state.className = `pill ${layer.state || "IDLE"}`;
+
+  fillDeviceSelects(layer);
+
+  document.getElementById("targetColor").value = String(layer.target_color || "red").toLowerCase();
+  document.getElementById("nonTargetAction").value = String(layer.non_target_action || "pass").toLowerCase();
+  document.getElementById("triggerLine").value = layer.trigger_line ?? 300;
+  document.getElementById("controlConf").value = layer.control_conf ?? 0.45;
+
+  const servo = layer.servo_config || {};
+  document.getElementById("targetDuty").value = servo.target_duty_ns ?? layer.target_duty_ns ?? 1630000;
+  document.getElementById("resetDuty").value = servo.reset_duty_ns ?? layer.reset_duty_ns ?? 1500000;
+  document.getElementById("otherDuty").value = servo.other_duty_ns ?? layer.other_duty_ns ?? 1370000;
+  document.getElementById("holdSeconds").value = servo.hold_seconds ?? layer.hold_seconds ?? 2;
+}
+
+function updateSummary() {
+  if (!statusData) return;
+
+  const summary = statusData.summary || {};
+  const metrics = statusData.metrics || {};
+
+  document.getElementById("sumTarget").textContent = summary.target_count ?? 0;
+  document.getElementById("sumOther").textContent = summary.other_count ?? 0;
+  document.getElementById("sumRunning").textContent = summary.running_layers ?? 0;
+
+  const cpu = metrics.cpu_percent ?? "--";
+  const temp = metrics.temperature_c ?? "--";
+  document.getElementById("sumCpu").textContent =
+    typeof cpu === "number" && typeof temp === "number"
+      ? `${cpu.toFixed(0)}% / ${temp.toFixed(0)}℃`
+      : "--";
+
+  const time = new Date();
+  document.getElementById("systemLine").textContent =
+    `${time.toLocaleString()} · 系统在线 · 故障层数：${summary.fault_layers ?? 0}`;
+}
+
+function updateVideoStats(layer) {
+  if (!layer) return;
+
+  const color = String(layer.target_color || "--").toUpperCase();
+
+  const colorEl = document.getElementById("statColor");
+  colorEl.textContent = color;
+  colorEl.className = "";
+
+  if (["RED", "YELLOW", "BLUE", "GREEN"].includes(color)) {
+    colorEl.classList.add(color.toLowerCase());
+  }
+
+  document.getElementById("statTarget").textContent = layer.target_count ?? 0;
+  document.getElementById("statOther").textContent = layer.other_count ?? 0;
+  document.getElementById("statFps").textContent = Number(layer.fps || 0).toFixed(1);
+  document.getElementById("statInfer").textContent = `${Number(layer.inference_ms || 0).toFixed(0)}ms`;
+  document.getElementById("cameraInfo").textContent = `摄像头：${layer.camera_path || "未绑定"}`;
+  document.getElementById("videoSubTitle").textContent = `${layerNames[selectedLayer]} / ${layer.state || "IDLE"} / ${layer.camera_path || "未绑定"}`;
+
+  const video = document.getElementById("video");
+  const empty = document.getElementById("videoEmpty");
+
+  if (!layer.camera_path) {
+    video.style.display = "none";
+    empty.style.display = "block";
+  } else {
+    video.style.display = "block";
+    empty.style.display = "none";
+  }
+}
+
+function reloadVideo() {
+  const video = document.getElementById("video");
+  const layer = currentLayer();
+
+  if (!layer || !layer.camera_path) {
+    video.removeAttribute("src");
+    updateVideoStats(layer);
+    return;
+  }
+
+  video.style.objectFit = videoFitCover ? "cover" : "contain";
+  video.removeAttribute("src");
+
+  setTimeout(() => {
+    video.src = `/api/layers/${selectedLayer}/stream?console=${Date.now()}`;
+  }, 120);
+}
+
+function toggleFit() {
+  videoFitCover = !videoFitCover;
+  document.getElementById("video").style.objectFit = videoFitCover ? "cover" : "contain";
+}
+
+function selectLayer(layerId) {
+  selectedLayer = layerId;
+  formDirty = false;
+  formLockUntil = 0;
+  setTabs();
+
+  const layer = currentLayer();
+  fillForm(layer);
+  updateVideoStats(layer);
+  reloadVideo();
+}
+
+async function refreshStatus() {
+  try {
+    statusData = await api("/api/status");
+    updateSummary();
+
+    const layer = currentLayer();
+    updateVideoStats(layer);
+
+    if (!formDirty && !isEditing()) {
+      fillForm(layer);
+    }
+  } catch (err) {
+    toast(`状态刷新失败：${err.message}`, true);
+  }
+}
+
+async function refreshLogs() {
+  try {
+    const data = await api("/api/logs?limit=50");
+    const logs = Array.isArray(data) ? data : (data.logs || data.items || []);
+    const list = document.getElementById("logList");
+
+    if (!logs.length) {
+      list.innerHTML = `<div class="log-row">暂无日志</div>`;
+      return;
+    }
+
+    list.innerHTML = logs.slice(0, 18).map(item => {
+      const time = item.time || item.timestamp || item.created_at || "";
+      const msg = item.message || item.msg || item.content || JSON.stringify(item);
+      return `<div class="log-row">${String(time).slice(0, 19)} ${msg}</div>`;
+    }).join("");
+  } catch (err) {}
+}
+
+async function loadDevices() {
+  try {
+    devicesData = await api("/api/devices");
+    const layer = currentLayer();
+    if (!formDirty && !isEditing()) {
+      fillDeviceSelects(layer);
+    }
+  } catch (err) {
+    toast(`设备读取失败：${err.message}`, true);
+  }
+}
+
+async function rescanDevices() {
+  try {
+    await api("/api/devices/rescan", {
+      method: "POST",
+      body: "{}"
+    });
+    await loadDevices();
+    await refreshStatus();
+    toast("设备扫描完成");
+  } catch (err) {
+    toast(`设备扫描失败：${err.message}`, true);
+  }
+}
+
+function getConfigPayload() {
+  return {
+    camera_uid: document.getElementById("cameraSelect").value || null,
+    pwm_uid: document.getElementById("pwmSelect").value || null,
+    target_color: document.getElementById("targetColor").value,
+    non_target_action: document.getElementById("nonTargetAction").value,
+    trigger_line: Number(document.getElementById("triggerLine").value || 300),
+    control_conf: Number(document.getElementById("controlConf").value || 0.45),
+    target_duty_ns: Number(document.getElementById("targetDuty").value || 1630000),
+    reset_duty_ns: Number(document.getElementById("resetDuty").value || 1500000),
+    other_duty_ns: Number(document.getElementById("otherDuty").value || 1370000),
+    hold_seconds: Number(document.getElementById("holdSeconds").value || 2)
+  };
+}
+
+async function saveLayerConfig() {
+  try {
+    const payload = getConfigPayload();
+    await api(`/api/layers/${selectedLayer}/config`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+
+    formDirty = false;
+    formLockUntil = 0;
+
+    await refreshStatus();
+    await loadDevices();
+    reloadVideo();
+
+    toast(`${layerNames[selectedLayer]}参数已保存`);
+  } catch (err) {
+    toast(`保存失败：${err.message}`, true);
+  }
+}
+
+async function layerAction(action) {
+  try {
+    await api(`/api/layers/${selectedLayer}/${action}`, {
+      method: "POST",
+      body: "{}"
+    });
+
+    await refreshStatus();
+
+    if (["start", "resume"].includes(action)) {
+      setTimeout(reloadVideo, 800);
+    }
+
+    toast(`${layerNames[selectedLayer]}已执行：${action}`);
+  } catch (err) {
+    toast(`操作失败：${err.message}`, true);
+  }
+}
+
+async function manualAction(action) {
+  try {
+    await api(`/api/layers/${selectedLayer}/manual/${action}`, {
+      method: "POST",
+      body: "{}"
+    });
+
+    await refreshStatus();
+    toast(`${layerNames[selectedLayer]}手动动作：${action}`);
+  } catch (err) {
+    toast(`手动动作失败：${err.message}`, true);
+  }
+}
+
+async function runForAll(action) {
+  for (const id of layerIds) {
+    try {
+      await api(`/api/layers/${id}/${action}`, {
+        method: "POST",
+        body: "{}"
+      });
+    } catch (err) {
+      console.warn(id, action, err);
+    }
+  }
+
+  await refreshStatus();
+
+  if (["start", "resume"].includes(action)) {
+    setTimeout(reloadVideo, 900);
+  }
+}
+
+function startAll() {
+  runForAll("start");
+}
+
+function pauseAll() {
+  runForAll("pause");
+}
+
+function stopAll() {
+  runForAll("stop");
+}
+
+function resetAllCounts() {
+  runForAll("reset-count");
+}
+
+async function init() {
+  bindFormEvents();
+  await loadDevices();
+  await refreshStatus();
+  selectLayer("layer_1");
+  refreshLogs();
+
+  setInterval(refreshStatus, 1000);
+  setInterval(refreshLogs, 1800);
+  setInterval(loadDevices, 6000);
+}
+
+init();
+</script>
+
+<!-- K1_MANUAL_SERVO_RUNNING_PATCH_START -->
+<script>
+(function () {
+  const manualButtonTexts = [
+    "手动目标位",
+    "手动 OTHER 位",
+    "舵机复位"
+  ];
+
+  function normalizeText(s) {
+    return String(s || "").replace(/\s+/g, " ").trim();
+  }
+
+  function isManualServoButton(btn) {
+    if (!btn) return false;
+    const text = normalizeText(btn.textContent);
+    return manualButtonTexts.some(t => text.includes(t));
+  }
+
+  function unlockManualServoButtons() {
+    const buttons = document.querySelectorAll("button");
+
+    buttons.forEach(btn => {
+      if (!isManualServoButton(btn)) return;
+
+      btn.disabled = false;
+      btn.removeAttribute("disabled");
+      btn.removeAttribute("aria-disabled");
+      btn.classList.remove("disabled");
+      btn.style.pointerEvents = "auto";
+      btn.style.opacity = "1";
+      btn.title = "运行中也可以手动控制舵机";
+    });
+  }
+
+  // 页面状态每秒刷新时可能会重新禁用按钮，所以持续解锁
+  setInterval(unlockManualServoButtons, 300);
+
+  // DOM 重绘后立即解锁
+  const observer = new MutationObserver(unlockManualServoButtons);
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["disabled", "class", "style", "aria-disabled"]
+  });
+
+  window.addEventListener("load", unlockManualServoButtons);
+  document.addEventListener("DOMContentLoaded", unlockManualServoButtons);
+
+  // 触摸屏按下时也先解锁，避免刚好被刷新禁用
+  document.addEventListener("pointerdown", function (ev) {
+    const btn = ev.target && ev.target.closest ? ev.target.closest("button") : null;
+    if (isManualServoButton(btn)) {
+      btn.disabled = false;
+      btn.removeAttribute("disabled");
+      btn.removeAttribute("aria-disabled");
+      btn.style.pointerEvents = "auto";
+      btn.style.opacity = "1";
+    }
+  }, true);
+
+  unlockManualServoButtons();
+
+  console.log("K1 manual servo buttons patch enabled: running state allowed.");
+})();
+</script>
+<!-- K1_MANUAL_SERVO_RUNNING_PATCH_END -->
+
+</body>
+</html>
