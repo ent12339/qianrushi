@@ -1,15 +1,20 @@
 # 智能材料加工分选机
 
-## 项目演示视频
-
-[点击查看项目演示视频](https://github.com/ent12339/qianrushi/releases/download/v1.0/你的视频文件名.mp4)
-
 
 ## 项目简介
 
 本项目是一个基于 K1 MUSE Pi Pro / Bianbu 系统开发的多层视觉智能分选系统。系统通过 USB 摄像头采集画面，使用 YOLO ONNX 模型识别红、黄、蓝、绿等不同颜色物料，并通过 Linux PWM 控制 MG90 舵机完成分选动作。
 
 项目采用模块化结构，将摄像头扫描、模型推理、分拣层控制、PWM 舵机控制、日志记录和 Web 控制台拆分为多个模块，方便比赛展示、现场调试和后续扩展。
+
+## 项目演示视频
+
+本项目演示视频已上传至 GitHub Release：
+
+[点击查看项目演示视频](https://github.com/ent12339/qianrushi/releases/download/v1.0/K1.MUSE.Pi.Pro.1.mp4)
+
+> 如果链接无法打开，请进入本仓库右侧 `Releases` 页面，下载对应的演示视频附件。
+
 
 ## 主要功能
 
