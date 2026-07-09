@@ -1,7 +1,0 @@
-fastapi
-uvicorn[standard]
-PyYAML
-psutil
-
-# K1/Bianbu 系统中已有并经过适配的 numpy、cv2、onnxruntime、spacemit_ort
-# 应继续使用开发板原环境，不建议通过普通 pip 覆盖这些硬件相关包。
