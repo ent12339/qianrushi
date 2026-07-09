@@ -1,4 +1,4 @@
-# 智能材料加工分选机
+# 智能加工材料分选机
 
 
 ## 项目简介
@@ -11,7 +11,7 @@
 
 本项目演示视频已上传至 GitHub Release：
 
-[点击查看项目演示视频](https://github.com/ent12339/qianrushi/releases/download/v1.0/K1.MUSE.Pi.Pro.1.mp4)
+[点击查看项目演示视频](https://github.com/ent12339/qianrushi/releases/download/v1.0/K1.MUSE.Pi.Pro.mp4)
 
 > 如果链接无法打开，请进入本仓库右侧 `Releases` 页面，下载对应的演示视频附件。
 
